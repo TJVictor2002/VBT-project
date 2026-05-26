@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1RM + Velocity Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <h1>1RM + Velocity Calculator</h1>
+      <div class="unit-toggle" role="group" aria-label="Unit selection">
+        <button class="unit-btn active" id="btn-lb" aria-pressed="true">lb</button>
+        <button class="unit-btn" id="btn-kg" aria-pressed="false">kg</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <div class="content">
+
+      <nav class="tab-nav" role="tablist" aria-label="Calculator tabs">
+        <button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="tab-1rm"      id="tab-btn-1">Estimate 1RM</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-velocity" id="tab-btn-2">Velocity Zone</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-vbt"      id="tab-btn-3">VBT → 1RM</button>
+      </nav>
+
+      <!-- Tab 1: 1RM from reps -->
+      <section class="tab-panel active" id="tab-1rm" role="tabpanel" aria-labelledby="tab-btn-1">
+        <h2>Estimate 1RM from Reps</h2>
+        <p class="placeholder-text">Form and results coming in Step 2.</p>
+      </section>
+
+      <!-- Tab 2: %1RM → Velocity Zone -->
+      <section class="tab-panel" id="tab-velocity" role="tabpanel" aria-labelledby="tab-btn-2">
+        <h2>%1RM → Velocity Zone</h2>
+        <p class="placeholder-text">Velocity zone lookup coming in Step 4.</p>
+      </section>
+
+      <!-- Tab 3: Velocity → 1RM (VBT) -->
+      <section class="tab-panel" id="tab-vbt" role="tabpanel" aria-labelledby="tab-btn-3">
+        <h2>Velocity → Estimated 1RM <span class="tag">VBT</span></h2>
+        <p class="placeholder-text">VBT estimator coming in Step 5.</p>
+      </section>
+
+    </div><!-- /.content -->
+
+    <!-- Sidebar: recent calculations -->
+    <aside class="recent-panel" aria-label="Recent calculations">
+      <div class="recent-header">
+        <h2 class="recent-title">Recent</h2>
+        <button class="btn-reset" id="btn-reset-history" type="button">Reset history</button>
+      </div>
+      <ul class="recent-list" id="recent-list" aria-live="polite">
+        <li class="recent-empty">No calculations yet.</li>
+      </ul>
+    </aside>
+
+  </main><!-- /.layout -->
+
+  <footer>
+    <p>Formulas are population averages and estimates only. Individual results vary. Consult a qualified coach before making programming decisions based on estimated 1RMs.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

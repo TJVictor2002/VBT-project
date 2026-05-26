@@ -1,0 +1,388 @@
+/* ============================================================
+   Variables & Reset
+   ============================================================ */
+:root {
+  --bg:           #0f1117;
+  --surface:      #1c1f2a;
+  --surface-2:    #252836;
+  --accent:       #e63946;
+  --accent-hover: #c1121f;
+  --text:         #f1f5f9;
+  --text-muted:   #94a3b8;
+  --border:       #2d3147;
+  --radius:       8px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.875rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+header h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   Unit Toggle
+   ============================================================ */
+.unit-toggle {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  overflow: hidden;
+}
+
+.unit-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.unit-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.unit-btn:hover:not(.active) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ============================================================
+   Page Layout — mobile first, then two-column on desktop
+   ============================================================ */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .layout {
+    align-items: flex-start;
+    flex-direction: row;
+  }
+
+  .content {
+    flex: 1;
+    min-width: 0; /* prevent flex blowout */
+  }
+
+  .recent-panel {
+    flex-shrink: 0;
+    position: sticky;
+    top: calc(3.25rem + 1.25rem); /* header height + gap */
+    width: 280px;
+  }
+}
+
+/* ============================================================
+   Tab Navigation
+   ============================================================ */
+.tab-nav {
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tab-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: -2px;
+  padding: 0.625rem 1rem;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--text);
+}
+
+/* ============================================================
+   Tab Panels
+   ============================================================ */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.tab-panel > h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+/* Small label badge */
+.tag {
+  background: var(--surface-2);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.45rem;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* Placeholder text shown while a tab is not yet built */
+.placeholder-text {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 3rem 0;
+  text-align: center;
+}
+
+/* ============================================================
+   Card (reusable surface block, used in Steps 2+)
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+/* ============================================================
+   Form Elements (base styles, inputs activated in Step 2+)
+   ============================================================ */
+label {
+  color: var(--text-muted);
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1.1rem;
+  padding: 0.8rem 1rem;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Chrome/Safari spin-button cleanup */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.4;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0.9rem 1.5rem;
+  transition: background 0.15s;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active {
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Recent Calculations Panel
+   ============================================================ */
+.recent-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.recent-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.recent-title {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.btn-reset {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-reset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.recent-list {
+  list-style: none;
+}
+
+.recent-empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* Individual recent item (used in Step 6) */
+.recent-item {
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  padding: 0.6rem 0;
+}
+
+.recent-item:first-child {
+  border-top: none;
+}
+
+.recent-item-label {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-bottom: 0.15rem;
+  text-transform: uppercase;
+}
+
+.recent-item-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.recent-item-time {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+footer {
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  margin-top: 2rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+/* ============================================================
+   Warning / Info messages (used in Steps 2+)
+   ============================================================ */
+.warning {
+  background: rgba(230, 57, 70, 0.12);
+  border: 1px solid rgba(230, 57, 70, 0.35);
+  border-radius: var(--radius);
+  color: #f4a0a7;
+  font-size: 0.82rem;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.9rem;
+}
+
+.info {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.9rem;
+}
