@@ -17,21 +17,66 @@ tabBtns.forEach((btn, i) => {
 });
 
 // ============================================================
-// Unit helpers
+// Unit state
+// Persisted in localStorage under key '1rm-unit'.
+// All internal calculations use kg; display converts to activeUnit.
 // ============================================================
-function currentUnit() {
-  return document.getElementById('btn-lb').classList.contains('active') ? 'lb' : 'kg';
-}
+let activeUnit = localStorage.getItem('1rm-unit') || 'lb';
 
+function currentUnit() { return activeUnit; }
+
+// Exact conversion factors from spec
+const KG_TO_LB = 2.20462;
+const LB_TO_KG = 0.453592;
+
+function kgToLb(kg) { return kg * KG_TO_LB; }
+function lbToKg(lb) { return lb * LB_TO_KG; }
+
+// Plate-increment rounding — reserved for working-weight outputs (not 1RM estimates).
 function roundToNearest(value, nearest) {
   return Math.round(value / nearest) * nearest;
 }
-
-// Rounds a calculated value to the nearest plate-friendly increment for display.
-// Keeps underlying math at full precision.
 function displayRound(value) {
-  return roundToNearest(value, currentUnit() === 'kg' ? 2.5 : 5);
+  return roundToNearest(value, activeUnit === 'kg' ? 2.5 : 5);
 }
+
+// Update all unit-bearing labels and toggle buttons to reflect `unit`.
+// Does NOT convert any values — pure DOM update.
+function applyUnitLabels(unit) {
+  document.getElementById('btn-lb').classList.toggle('active', unit === 'lb');
+  document.getElementById('btn-kg').classList.toggle('active', unit === 'kg');
+  document.getElementById('btn-lb').setAttribute('aria-pressed', String(unit === 'lb'));
+  document.getElementById('btn-kg').setAttribute('aria-pressed', String(unit === 'kg'));
+  document.querySelectorAll('.unit-label').forEach(el => el.textContent = unit);
+  document.querySelectorAll('#results-1rm .result-unit').forEach(el => el.textContent = unit);
+}
+
+// Switch to a new unit: converts the weight input and re-renders results.
+function switchUnit(newUnit) {
+  if (newUnit === activeUnit) return;
+  const prevUnit = activeUnit;
+  activeUnit     = newUnit;
+  localStorage.setItem('1rm-unit', newUnit);
+  applyUnitLabels(newUnit);
+
+  // Convert the weight input field value
+  const weightEl = document.getElementById('input-weight');
+  if (weightEl.value !== '') {
+    const v = parseFloat(weightEl.value);
+    if (!isNaN(v)) {
+      weightEl.value = (prevUnit === 'lb' ? lbToKg(v) : kgToLb(v)).toFixed(1);
+    }
+  }
+
+  // Re-render results from stored kg values — no recalculation needed
+  if (lastResults1rm) renderResults1rm();
+}
+
+document.getElementById('btn-lb').addEventListener('click', () => switchUnit('lb'));
+document.getElementById('btn-kg').addEventListener('click', () => switchUnit('kg'));
+
+// Apply saved preference on page load (labels only — inputs are empty)
+applyUnitLabels(activeUnit);
 
 // ============================================================
 // 1RM formulas — pure functions, no side effects
@@ -61,29 +106,45 @@ function lander(w, r) {
 // ============================================================
 // Tab 1 — 1RM Estimator
 // ============================================================
+
+// Last computed results stored in kg (canonical).
+// Null until the first calculation is run.
+let lastResults1rm = null;
+
+// Render lastResults1rm to the DOM in the current activeUnit.
+function renderResults1rm() {
+  const { eKg, bKg, lKg } = lastResults1rm;
+  const to = activeUnit === 'lb' ? kgToLb : v => v;
+
+  document.getElementById('result-epley').textContent   = to(eKg).toFixed(1);
+  document.getElementById('result-brzycki').textContent = bKg !== null ? to(bKg).toFixed(1) : 'N/A';
+  document.getElementById('result-lander').textContent  = lKg !== null ? to(lKg).toFixed(1) : 'N/A';
+
+  const validVals = [eKg, bKg, lKg].filter(v => v !== null);
+  const avgKg = validVals.reduce((a, b) => a + b, 0) / validVals.length;
+  document.getElementById('result-average').textContent = to(avgKg).toFixed(1);
+
+  document.querySelectorAll('#results-1rm .result-unit').forEach(el => el.textContent = activeUnit);
+}
+
 document.getElementById('form-1rm').addEventListener('submit', e => {
   e.preventDefault();
 
-  const w = parseFloat(document.getElementById('input-weight').value);
-  const r = parseInt(document.getElementById('input-reps').value, 10);
+  const wInput = parseFloat(document.getElementById('input-weight').value);
+  const r      = parseInt(document.getElementById('input-reps').value, 10);
 
-  if (!w || w <= 0 || !r || r <= 0) return;
+  if (!wInput || wInput <= 0 || !r || r <= 0) return;
 
-  const eVal = epley(w, r);
-  const bVal = brzycki(w, r);
-  const lVal = lander(w, r);
-  const unit = currentUnit();
+  // Normalize to kg so results survive unit toggles at full precision
+  const wKg = activeUnit === 'kg' ? wInput : lbToKg(wInput);
 
-  document.getElementById('result-epley').textContent   = eVal.toFixed(1);
-  document.getElementById('result-brzycki').textContent = bVal !== null ? bVal.toFixed(1) : 'N/A';
-  document.getElementById('result-lander').textContent  = lVal !== null ? lVal.toFixed(1) : 'N/A';
+  lastResults1rm = {
+    eKg: epley(wKg, r),
+    bKg: brzycki(wKg, r),
+    lKg: lander(wKg, r),
+  };
 
-  const validVals = [eVal, bVal, lVal].filter(v => v !== null);
-  const avg = validVals.reduce((a, b) => a + b, 0) / validVals.length;
-  document.getElementById('result-average').textContent = avg.toFixed(1);
-
-  // Update all unit labels inside the results block
-  document.querySelectorAll('#results-1rm .result-unit').forEach(el => el.textContent = unit);
+  renderResults1rm();
 
   document.getElementById('warning-reps').classList.toggle('hidden', r <= 12);
   document.getElementById('results-1rm').classList.remove('hidden');
