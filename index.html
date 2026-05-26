@@ -31,7 +31,56 @@
       <!-- Tab 1: 1RM from reps -->
       <section class="tab-panel active" id="tab-1rm" role="tabpanel" aria-labelledby="tab-btn-1">
         <h2>Estimate 1RM from Reps</h2>
-        <p class="placeholder-text">Form and results coming in Step 2.</p>
+
+        <form class="calc-form" id="form-1rm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="input-weight">Weight lifted (<span class="unit-label">lb</span>)</label>
+              <input type="number" id="input-weight" min="1" step="any" placeholder="225" required>
+            </div>
+            <div class="form-group">
+              <label for="input-reps">Reps completed</label>
+              <input type="number" id="input-reps" min="1" max="36" step="1" placeholder="5" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">Calculate 1RM</button>
+        </form>
+
+        <div id="results-1rm" class="results hidden" aria-live="polite">
+          <div id="warning-reps" class="warning hidden">
+            Estimates are unreliable above 12 reps — treat as a rough guide only.
+          </div>
+
+          <div class="result-grid">
+            <div class="result-card">
+              <div class="result-label">Epley</div>
+              <div class="result-value" id="result-epley">—</div>
+              <div class="result-unit">lb</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Brzycki</div>
+              <div class="result-value" id="result-brzycki">—</div>
+              <div class="result-unit">lb</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Lander</div>
+              <div class="result-value" id="result-lander">—</div>
+              <div class="result-unit">lb</div>
+            </div>
+          </div>
+
+          <div class="result-average card">
+            <span class="result-average-label">Average</span>
+            <span class="result-average-value" id="result-average">—</span>
+            <span class="result-unit">lb</span>
+          </div>
+
+          <p class="info">
+            Brzycki is most accurate for 2–5 reps. Epley and Lander hold up to ~10 reps.
+            All three degrade above 10.
+          </p>
+        </div>
+
       </section>
 
       <!-- Tab 2: %1RM → Velocity Zone -->
