@@ -36,7 +36,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="input-weight">Weight lifted (<span class="unit-label">lb</span>)</label>
-              <input type="number" id="input-weight" min="1" step="any" placeholder="225" required>
+              <input type="number" id="input-weight" class="js-weight-input" min="1" step="any" placeholder="225" required>
             </div>
             <div class="form-group">
               <label for="input-reps">Reps completed</label>
@@ -86,7 +86,54 @@
       <!-- Tab 2: %1RM → Velocity Zone -->
       <section class="tab-panel" id="tab-velocity" role="tabpanel" aria-labelledby="tab-btn-2">
         <h2>%1RM → Velocity Zone</h2>
-        <p class="placeholder-text">Velocity zone lookup coming in Step 4.</p>
+
+        <form class="calc-form" id="form-velocity" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="input-1rm">Your 1RM (<span class="unit-label">lb</span>)</label>
+              <input type="number" id="input-1rm" class="js-weight-input" min="1" step="any" placeholder="400" required>
+            </div>
+            <div class="form-group">
+              <label for="input-working">Working weight (<span class="unit-label">lb</span>)</label>
+              <input type="number" id="input-working" class="js-weight-input" min="0" step="any" placeholder="320" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">Find Zone</button>
+        </form>
+
+        <div id="results-velocity" class="results hidden" aria-live="polite">
+          <div id="error-velocity" class="warning hidden"></div>
+
+          <div id="zone-valid-output">
+            <div class="zone-result-card card">
+              <span class="zone-dot" id="zone-dot"></span>
+              <div class="zone-result-info">
+                <div class="zone-result-name" id="zone-name">—</div>
+                <div class="zone-result-meta">
+                  <span id="zone-pct">—</span>
+                  <span class="zone-meta-sep">&middot;</span>
+                  <span id="zone-velocity">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-bar-wrap">
+              <div class="zone-bar" id="zone-bar">
+                <!-- Zone segments inserted by JS on page load -->
+                <div class="zone-marker hidden" id="zone-marker"></div>
+              </div>
+              <div class="zone-bar-ticks" aria-hidden="true">
+                <span style="left:0%">0</span>
+                <span style="left:60%">60</span>
+                <span style="left:70%">70</span>
+                <span style="left:80%">80</span>
+                <span style="left:90%">90</span>
+                <span style="left:100%">100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       <!-- Tab 3: Velocity → 1RM (VBT) -->

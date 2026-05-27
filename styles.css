@@ -463,6 +463,93 @@ footer {
 }
 
 /* ============================================================
+   Zone result card (Tab 2)
+   ============================================================ */
+.zone-result-card {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+}
+
+.zone-dot {
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+  height: 14px;
+  width: 14px;
+}
+
+.zone-result-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.zone-result-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.zone-meta-sep {
+  margin: 0 0.35rem;
+}
+
+/* ============================================================
+   Zone bar (Tab 2)
+   ============================================================ */
+.zone-bar-wrap {
+  margin-top: 1.25rem;
+}
+
+.zone-bar {
+  border-radius: 5px;
+  display: flex;
+  height: 28px;
+  overflow: visible;
+  position: relative;
+}
+
+.zone-segment {
+  height: 100%;
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+.zone-segment:first-child { border-radius: 5px 0 0 5px; }
+.zone-segment:nth-child(5) { border-radius: 0 5px 5px 0; }
+
+.zone-segment--active {
+  opacity: 1;
+}
+
+.zone-marker {
+  background: #fff;
+  border-radius: 2px;
+  bottom: -5px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  pointer-events: none;
+  position: absolute;
+  top: -5px;
+  transform: translateX(-50%);
+  transition: left 0.25s ease;
+  width: 3px;
+}
+
+.zone-bar-ticks {
+  height: 1.25rem;
+  margin-top: 0.3rem;
+  position: relative;
+}
+
+.zone-bar-ticks span {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+/* ============================================================
    Warning / Info messages (used in Steps 2+)
    ============================================================ */
 .warning {
