@@ -69,8 +69,9 @@ function switchUnit(newUnit) {
     }
   });
 
-  // Re-render results that depend on unit (Tab 1 only; Tab 2 shows % and m/s)
-  if (lastResults1rm) renderResults1rm();
+  // Re-render results that depend on unit (Tabs 1 and 3; Tab 2 shows % and m/s)
+  if (lastResults1rm)  renderResults1rm();
+  if (lastResultsVbt)  renderResultsVbt();
 }
 
 document.getElementById('btn-lb').addEventListener('click', () => switchUnit('lb'));
@@ -219,6 +220,85 @@ document.getElementById('form-velocity').addEventListener('submit', e => {
   const marker = document.getElementById('zone-marker');
   marker.style.left = pct.toFixed(2) + '%';
   marker.classList.remove('hidden');
+});
+
+// ============================================================
+// VBT load-velocity profiles — lift-specific linear regression
+//
+// Model: %1RM = slope × MV + intercept   (MV in m/s)
+// Then:  estimated_1RM = load / (%1RM / 100)
+//
+// Adding a new lift: append one entry to VBT_LIFTS and one
+// <option value="id"> to #input-vbt-lift in index.html.
+//
+// Sources (approximate reference values):
+//   González-Badillo & Sánchez-Medina (2010) — squat/bench
+//   Deadlift values are approximate; verify before publishing.
+// ============================================================
+const VBT_LIFTS = [
+  { id: 'squat', label: 'Back Squat',  slope: -84.7, intercept: 112.0 },
+  { id: 'bench', label: 'Bench Press', slope: -91.0, intercept: 117.0 },
+  { id: 'dead',  label: 'Deadlift',    slope: -85.0, intercept: 110.0 },
+];
+
+// Last VBT result stored in kg (canonical). Null until first run.
+let lastResultsVbt = null;
+
+function renderResultsVbt() {
+  const { pct, estKg } = lastResultsVbt;
+  const to = activeUnit === 'lb' ? kgToLb : v => v;
+
+  document.getElementById('vbt-pct').textContent = pct.toFixed(1) + '%';
+  document.getElementById('vbt-1rm').textContent =
+    estKg !== null ? to(estKg).toFixed(1) + ' ' + activeUnit : '—';
+
+  // Sanity-check: estimated 1RM outside plausible range (50–500 kg)
+  const rangeEl      = document.getElementById('warning-vbt-range');
+  const outsideRange = estKg !== null && (estKg < 50 || estKg > 500);
+  rangeEl.textContent = 'Estimated 1RM is outside the expected range — verify your inputs.';
+  rangeEl.classList.toggle('hidden', !outsideRange);
+}
+
+// ============================================================
+// Tab 3 — VBT Estimator
+// ============================================================
+const VBT_VEL_MIN = 0.3;
+const VBT_VEL_MAX = 1.2;
+
+document.getElementById('form-vbt').addEventListener('submit', e => {
+  e.preventDefault();
+
+  const loadInput = parseFloat(document.getElementById('input-vbt-load').value);
+  const mv        = parseFloat(document.getElementById('input-vbt-vel').value);
+  const liftId    = document.getElementById('input-vbt-lift').value;
+
+  if (!loadInput || loadInput <= 0 || !mv || mv <= 0) return;
+
+  const resultsEl   = document.getElementById('results-vbt');
+  const errorEl     = document.getElementById('error-vbt');
+  const validOutput = document.getElementById('vbt-valid-output');
+
+  resultsEl.classList.remove('hidden');
+
+  // Hard gate: equations are only fit for the 0.3–1.2 m/s strength-training range
+  if (mv < VBT_VEL_MIN || mv > VBT_VEL_MAX) {
+    errorEl.textContent = `Velocity outside the reliable range for VBT estimation (${VBT_VEL_MIN}–${VBT_VEL_MAX} m/s). Use a heavier set closer to your 1RM for an accurate estimate.`;
+    errorEl.classList.remove('hidden');
+    validOutput.classList.add('hidden');
+    lastResultsVbt = null;
+    return;
+  }
+
+  errorEl.classList.add('hidden');
+  validOutput.classList.remove('hidden');
+
+  const lift   = VBT_LIFTS.find(l => l.id === liftId);
+  const loadKg = activeUnit === 'kg' ? loadInput : lbToKg(loadInput);
+  const pct    = lift.slope * mv + lift.intercept;
+  const estKg  = pct > 0 ? loadKg / (pct / 100) : null;
+
+  lastResultsVbt = { pct, estKg };
+  renderResultsVbt();
 });
 
 // ============================================================
