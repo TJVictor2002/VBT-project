@@ -323,33 +323,46 @@ input[type="number"]::-webkit-outer-spin-button {
   text-align: center;
 }
 
-/* Individual recent item (used in Step 6) */
+/* Individual recent item */
 .recent-item {
   border-top: 1px solid var(--border);
-  font-size: 0.8rem;
-  padding: 0.6rem 0;
+  padding: 0.65rem 0;
 }
 
 .recent-item:first-child {
   border-top: none;
 }
 
-.recent-item-label {
-  color: var(--text-muted);
-  font-size: 0.7rem;
-  margin-bottom: 0.15rem;
-  text-transform: uppercase;
+.recent-item-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
 }
 
-.recent-item-value {
-  color: var(--text);
-  font-weight: 600;
+.recent-item-type {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .recent-item-time {
   color: var(--text-muted);
-  font-size: 0.7rem;
-  margin-top: 0.2rem;
+  font-size: 0.65rem;
+}
+
+.recent-item-result {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.recent-item-detail {
+  color: var(--text-muted);
+  font-size: 0.72rem;
 }
 
 /* ============================================================

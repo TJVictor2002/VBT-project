@@ -51,6 +51,82 @@ function applyUnitLabels(unit) {
   document.querySelectorAll('#results-1rm .result-unit').forEach(el => el.textContent = unit);
 }
 
+// ============================================================
+// Recent calculations history
+// Stored in localStorage as a JSON array, newest first, max 5.
+// All weights persisted in kg (canonical); converted at render time.
+// ============================================================
+const HISTORY_KEY = '1rm-history';
+const HISTORY_MAX = 5;
+
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCalc(entry) {
+  const history = loadHistory();
+  history.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, HISTORY_MAX)));
+  renderHistory();
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const list    = document.getElementById('recent-list');
+  const to      = activeUnit === 'lb' ? kgToLb : v => v;
+  const u       = activeUnit;
+
+  if (history.length === 0) {
+    list.innerHTML = '<li class="recent-empty">No calculations yet.</li>';
+    return;
+  }
+
+  list.innerHTML = history.map(entry => {
+    let typeLabel, result, detail;
+
+    if (entry.type === '1rm') {
+      typeLabel = 'Estimate 1RM';
+      result    = `avg ${to(entry.avgKg).toFixed(1)} ${u}`;
+      detail    = `${to(entry.weightKg).toFixed(1)} ${u} × ${entry.reps} reps`;
+    } else if (entry.type === 'zone') {
+      typeLabel = 'Velocity Zone';
+      result    = entry.zone;
+      detail    = `${to(entry.ormKg).toFixed(1)} ${u} · ${entry.pct.toFixed(1)}%`;
+    } else if (entry.type === 'vbt') {
+      typeLabel = 'VBT Estimate';
+      result    = entry.estKg !== null ? `${to(entry.estKg).toFixed(1)} ${u}` : '—';
+      detail    = `${entry.lift} · ${entry.mv.toFixed(2)} m/s`;
+    }
+
+    return `<li class="recent-item">
+      <div class="recent-item-header">
+        <span class="recent-item-type">${typeLabel}</span>
+        <span class="recent-item-time">${formatTime(entry.ts)}</span>
+      </div>
+      <div class="recent-item-result">${result}</div>
+      <div class="recent-item-detail">${detail}</div>
+    </li>`;
+  }).join('');
+}
+
+document.getElementById('btn-reset-history').addEventListener('click', () => {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+});
+
+// ============================================================
+// Unit switching
+// ============================================================
 // Switch to a new unit: converts all weight inputs and re-renders unit-dependent results.
 function switchUnit(newUnit) {
   if (newUnit === activeUnit) return;
@@ -70,8 +146,9 @@ function switchUnit(newUnit) {
   });
 
   // Re-render results that depend on unit (Tabs 1 and 3; Tab 2 shows % and m/s)
-  if (lastResults1rm)  renderResults1rm();
-  if (lastResultsVbt)  renderResultsVbt();
+  if (lastResults1rm) renderResults1rm();
+  if (lastResultsVbt) renderResultsVbt();
+  renderHistory();
 }
 
 document.getElementById('btn-lb').addEventListener('click', () => switchUnit('lb'));
@@ -115,19 +192,42 @@ let lastResults1rm = null;
 
 // Render lastResults1rm to the DOM in the current activeUnit.
 function renderResults1rm() {
-  const { eKg, bKg, lKg } = lastResults1rm;
+  const { eKg, bKg, lKg, avgKg } = lastResults1rm;
   const to = activeUnit === 'lb' ? kgToLb : v => v;
 
   document.getElementById('result-epley').textContent   = to(eKg).toFixed(1);
   document.getElementById('result-brzycki').textContent = bKg !== null ? to(bKg).toFixed(1) : 'N/A';
   document.getElementById('result-lander').textContent  = lKg !== null ? to(lKg).toFixed(1) : 'N/A';
-
-  const validVals = [eKg, bKg, lKg].filter(v => v !== null);
-  const avgKg = validVals.reduce((a, b) => a + b, 0) / validVals.length;
   document.getElementById('result-average').textContent = to(avgKg).toFixed(1);
 
   document.querySelectorAll('#results-1rm .result-unit').forEach(el => el.textContent = activeUnit);
 }
+
+document.getElementById('form-1rm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  const wInput = parseFloat(document.getElementById('input-weight').value);
+  const r      = parseInt(document.getElementById('input-reps').value, 10);
+
+  if (!wInput || wInput <= 0 || !r || r <= 0) return;
+
+  // Normalize to kg so results survive unit toggles at full precision
+  const wKg = activeUnit === 'kg' ? wInput : lbToKg(wInput);
+
+  const eKg = epley(wKg, r);
+  const bKg = brzycki(wKg, r);
+  const lKg = lander(wKg, r);
+  const validVals = [eKg, bKg, lKg].filter(v => v !== null);
+  const avgKg = validVals.reduce((a, b) => a + b, 0) / validVals.length;
+
+  lastResults1rm = { eKg, bKg, lKg, avgKg };
+  renderResults1rm();
+
+  document.getElementById('warning-reps').classList.toggle('hidden', r <= 12);
+  document.getElementById('results-1rm').classList.remove('hidden');
+
+  saveCalc({ type: '1rm', ts: Date.now(), weightKg: wKg, reps: r, avgKg });
+});
 
 // ============================================================
 // Velocity zones — Mann's framework
@@ -151,19 +251,17 @@ function getZone(pct) {
   for (let i = ZONES.length - 1; i >= 0; i--) {
     if (pct >= ZONES[i].minPct) return ZONES[i];
   }
-  return ZONES[0]; // pct < 0 fallback (shouldn't reach in practice)
+  return ZONES[0];
 }
 
 // Build the five coloured bar segments once on page load.
-// Segments are inserted before the marker element so the marker
-// always renders on top.
 (function buildZoneBar() {
   const bar    = document.getElementById('zone-bar');
   const marker = document.getElementById('zone-marker');
   ZONES.forEach(zone => {
     const seg = document.createElement('div');
-    seg.className            = 'zone-segment';
-    seg.style.width          = zone.barWidth + '%';
+    seg.className             = 'zone-segment';
+    seg.style.width           = zone.barWidth + '%';
     seg.style.backgroundColor = zone.color;
     seg.setAttribute('title', zone.name);
     bar.insertBefore(seg, marker);
@@ -205,21 +303,22 @@ document.getElementById('form-velocity').addEventListener('submit', e => {
   const pct  = (working / orm) * 100;
   const zone = getZone(pct);
 
-  // Result card
   document.getElementById('zone-dot').style.backgroundColor = zone.color;
   document.getElementById('zone-name').textContent          = zone.name;
   document.getElementById('zone-pct').textContent           = pct.toFixed(1) + '% of 1RM';
   document.getElementById('zone-velocity').textContent      = zone.velocity;
 
-  // Highlight the active bar segment; dim the rest
   document.querySelectorAll('.zone-segment').forEach((seg, i) => {
     seg.classList.toggle('zone-segment--active', ZONES[i] === zone);
   });
 
-  // Position the marker
   const marker = document.getElementById('zone-marker');
   marker.style.left = pct.toFixed(2) + '%';
   marker.classList.remove('hidden');
+
+  const ormKg     = activeUnit === 'kg' ? orm     : lbToKg(orm);
+  const workingKg = activeUnit === 'kg' ? working : lbToKg(working);
+  saveCalc({ type: 'zone', ts: Date.now(), ormKg, workingKg, pct, zone: zone.name });
 });
 
 // ============================================================
@@ -299,30 +398,11 @@ document.getElementById('form-vbt').addEventListener('submit', e => {
 
   lastResultsVbt = { pct, estKg };
   renderResultsVbt();
+
+  saveCalc({ type: 'vbt', ts: Date.now(), loadKg, mv, lift: lift.label, pct, estKg });
 });
 
 // ============================================================
-// Tab 1 — 1RM Estimator
+// Page load init
 // ============================================================
-document.getElementById('form-1rm').addEventListener('submit', e => {
-  e.preventDefault();
-
-  const wInput = parseFloat(document.getElementById('input-weight').value);
-  const r      = parseInt(document.getElementById('input-reps').value, 10);
-
-  if (!wInput || wInput <= 0 || !r || r <= 0) return;
-
-  // Normalize to kg so results survive unit toggles at full precision
-  const wKg = activeUnit === 'kg' ? wInput : lbToKg(wInput);
-
-  lastResults1rm = {
-    eKg: epley(wKg, r),
-    bKg: brzycki(wKg, r),
-    lKg: lander(wKg, r),
-  };
-
-  renderResults1rm();
-
-  document.getElementById('warning-reps').classList.toggle('hidden', r <= 12);
-  document.getElementById('results-1rm').classList.remove('hidden');
-});
+renderHistory();
