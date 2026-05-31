@@ -206,10 +206,26 @@ function renderResults1rm() {
 document.getElementById('form-1rm').addEventListener('submit', e => {
   e.preventDefault();
 
-  const wInput = parseFloat(document.getElementById('input-weight').value);
-  const r      = parseInt(document.getElementById('input-reps').value, 10);
+  const errorEl = document.getElementById('error-1rm');
+  const wRaw    = document.getElementById('input-weight').value;
+  const rRaw    = document.getElementById('input-reps').value;
+  const wInput  = parseFloat(wRaw);
+  const r       = parseInt(rRaw, 10);
 
-  if (!wInput || wInput <= 0 || !r || r <= 0) return;
+  if (!wRaw || isNaN(wInput) || wInput <= 0) {
+    errorEl.textContent = 'Enter a weight greater than 0.';
+    errorEl.classList.remove('hidden');
+    document.getElementById('results-1rm').classList.add('hidden');
+    return;
+  }
+  if (!rRaw || isNaN(r) || r < 1 || r > 36) {
+    errorEl.textContent = 'Reps must be a whole number between 1 and 36.';
+    errorEl.classList.remove('hidden');
+    document.getElementById('results-1rm').classList.add('hidden');
+    return;
+  }
+
+  errorEl.classList.add('hidden');
 
   // Normalize to kg so results survive unit toggles at full precision
   const wKg = activeUnit === 'kg' ? wInput : lbToKg(wInput);
@@ -274,8 +290,10 @@ function getZone(pct) {
 document.getElementById('form-velocity').addEventListener('submit', e => {
   e.preventDefault();
 
-  const orm     = parseFloat(document.getElementById('input-1rm').value);
-  const working = parseFloat(document.getElementById('input-working').value);
+  const ormRaw     = document.getElementById('input-1rm').value;
+  const workingRaw = document.getElementById('input-working').value;
+  const orm        = parseFloat(ormRaw);
+  const working    = parseFloat(workingRaw);
 
   const resultsEl   = document.getElementById('results-velocity');
   const errorEl     = document.getElementById('error-velocity');
@@ -283,9 +301,14 @@ document.getElementById('form-velocity').addEventListener('submit', e => {
 
   resultsEl.classList.remove('hidden');
 
-  // Validate
-  if (!orm || orm <= 0 || isNaN(working) || working < 0) {
-    errorEl.textContent = 'Enter a valid 1RM and working weight.';
+  if (!ormRaw || isNaN(orm) || orm <= 0) {
+    errorEl.textContent = 'Enter a 1RM greater than 0.';
+    errorEl.classList.remove('hidden');
+    validOutput.classList.add('hidden');
+    return;
+  }
+  if (workingRaw === '' || isNaN(working) || working < 0) {
+    errorEl.textContent = 'Enter a working weight of 0 or more.';
     errorEl.classList.remove('hidden');
     validOutput.classList.add('hidden');
     return;
@@ -354,34 +377,57 @@ function renderResultsVbt() {
   // Sanity-check: estimated 1RM outside plausible range (50–500 kg)
   const rangeEl      = document.getElementById('warning-vbt-range');
   const outsideRange = estKg !== null && (estKg < 50 || estKg > 500);
-  rangeEl.textContent = 'Estimated 1RM is outside the expected range — verify your inputs.';
+  rangeEl.textContent = 'Estimated 1RM looks unusually high or low — double-check your load and velocity inputs.';
   rangeEl.classList.toggle('hidden', !outsideRange);
 }
 
 // ============================================================
 // Tab 3 — VBT Estimator
 // ============================================================
-const VBT_VEL_MIN = 0.3;
-const VBT_VEL_MAX = 1.2;
+const VBT_VEL_MIN = 0.2;
+const VBT_VEL_MAX = 1.0;
 
 document.getElementById('form-vbt').addEventListener('submit', e => {
   e.preventDefault();
 
-  const loadInput = parseFloat(document.getElementById('input-vbt-load').value);
-  const mv        = parseFloat(document.getElementById('input-vbt-vel').value);
-  const liftId    = document.getElementById('input-vbt-lift').value;
+  const loadRaw    = document.getElementById('input-vbt-load').value;
+  const velRaw     = document.getElementById('input-vbt-vel').value;
+  const liftId     = document.getElementById('input-vbt-lift').value;
+  const loadInput  = parseFloat(loadRaw);
+  const mv         = parseFloat(velRaw);
 
-  if (!loadInput || loadInput <= 0 || !mv || mv <= 0) return;
-
-  const resultsEl   = document.getElementById('results-vbt');
-  const errorEl     = document.getElementById('error-vbt');
-  const validOutput = document.getElementById('vbt-valid-output');
+  const resultsEl      = document.getElementById('results-vbt');
+  const errorEl        = document.getElementById('error-vbt');
+  const validOutput    = document.getElementById('vbt-valid-output');
+  const confidenceNote = document.getElementById('vbt-confidence-note');
 
   resultsEl.classList.remove('hidden');
 
-  // Hard gate: equations are only fit for the 0.3–1.2 m/s strength-training range
-  if (mv < VBT_VEL_MIN || mv > VBT_VEL_MAX) {
-    errorEl.textContent = `Velocity outside the reliable range for VBT estimation (${VBT_VEL_MIN}–${VBT_VEL_MAX} m/s). Use a heavier set closer to your 1RM for an accurate estimate.`;
+  if (!loadRaw || isNaN(loadInput) || loadInput <= 0) {
+    errorEl.textContent = 'Enter a load greater than 0.';
+    errorEl.classList.remove('hidden');
+    validOutput.classList.add('hidden');
+    lastResultsVbt = null;
+    return;
+  }
+  if (!velRaw || isNaN(mv) || mv <= 0) {
+    errorEl.textContent = 'Enter a mean velocity in m/s (e.g., 0.60).';
+    errorEl.classList.remove('hidden');
+    validOutput.classList.add('hidden');
+    lastResultsVbt = null;
+    return;
+  }
+
+  // Hard gate: equations cannot be extrapolated outside the range they were fit to
+  if (mv > VBT_VEL_MAX) {
+    errorEl.textContent = 'Velocity is too fast for reliable 1RM estimation. Use a heavier load — aim for a velocity between 0.3 and 1.0 m/s.';
+    errorEl.classList.remove('hidden');
+    validOutput.classList.add('hidden');
+    lastResultsVbt = null;
+    return;
+  }
+  if (mv < VBT_VEL_MIN) {
+    errorEl.textContent = 'Velocity is too slow for reliable estimation — this is at or above your true 1RM.';
     errorEl.classList.remove('hidden');
     validOutput.classList.add('hidden');
     lastResultsVbt = null;
@@ -390,6 +436,7 @@ document.getElementById('form-vbt').addEventListener('submit', e => {
 
   errorEl.classList.add('hidden');
   validOutput.classList.remove('hidden');
+  confidenceNote.classList.remove('hidden');
 
   const lift   = VBT_LIFTS.find(l => l.id === liftId);
   const loadKg = activeUnit === 'kg' ? loadInput : lbToKg(loadInput);

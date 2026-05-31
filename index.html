@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1RM + Velocity Calculator</title>
+  <title>1RM + Velocity Calculator — VBT Training Tool</title>
+  <meta name="description" content="Calculate your estimated 1-rep max from reps, find your velocity training zone, and estimate 1RM from bar speed using velocity-based training (VBT).">
+  <meta property="og:title" content="1RM + Velocity Calculator">
+  <meta property="og:description" content="Calculate your estimated 1-rep max from reps, find your velocity training zone, and estimate 1RM from bar speed using VBT.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/og-image.png">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23e63946'/><text x='16' y='23' text-anchor='middle' font-size='14' font-family='system-ui,sans-serif' font-weight='bold' fill='white'>1RM</text></svg>">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -45,6 +51,8 @@
           </div>
           <button type="submit" class="btn-primary">Calculate 1RM</button>
         </form>
+
+        <div id="error-1rm" class="warning hidden"></div>
 
         <div id="results-1rm" class="results hidden" aria-live="polite">
           <div id="warning-reps" class="warning hidden">
@@ -187,9 +195,9 @@
             <p class="vbt-disclaimer">
               VBT 1RM estimates use generic load-velocity equations for the three main lifts.
               Most reliable for: heavy sets (&ge;60% 1RM) of the standard barbell version.
-              Less reliable for: variations (RDL, pause work, tempo lifts), light/explosive loads,
+              Less reliable for: lift variations (RDL, pause work, tempo lifts), light/explosive loads,
               and individuals whose load-velocity profile differs from population averages.
-              For accuracy across your full training range, a personal profile built from multiple sets is needed — coming in v2.
+              Use these numbers as a guide alongside your own training experience.
             </p>
           </div>
         </div>
@@ -212,7 +220,7 @@
   </main><!-- /.layout -->
 
   <footer>
-    <p>Formulas are population averages and estimates only. Individual results vary. Consult a qualified coach before making programming decisions based on estimated 1RMs.</p>
+    <p>1RM and VBT estimates are mathematical approximations. Use them as a guide, not a substitute for testing under appropriate supervision.</p>
   </footer>
 
   <script src="app.js"></script>
