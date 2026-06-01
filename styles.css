@@ -127,13 +127,6 @@ header h1 {
   display: flex;
   gap: 0;
   margin-bottom: 1.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.tab-nav::-webkit-scrollbar {
-  display: none;
 }
 
 .tab-btn {
@@ -150,6 +143,18 @@ header h1 {
   padding: 0.75rem 1rem;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    flex: 1;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0.75rem 0.4rem;
+    text-align: center;
+    text-overflow: ellipsis;
+  }
 }
 
 .tab-btn.active {
