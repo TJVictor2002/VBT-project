@@ -73,6 +73,7 @@ header h1 {
   font-family: var(--font);
   font-size: 0.875rem;
   font-weight: 600;
+  min-height: 44px;
   padding: 0.4rem 1rem;
   transition: background 0.15s, color 0.15s;
 }

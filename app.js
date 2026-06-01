@@ -212,8 +212,8 @@ document.getElementById('form-1rm').addEventListener('submit', e => {
   const wInput  = parseFloat(wRaw);
   const r       = parseInt(rRaw, 10);
 
-  if (!wRaw || isNaN(wInput) || wInput <= 0) {
-    errorEl.textContent = 'Enter a weight greater than 0.';
+  if (!wRaw || isNaN(wInput) || !isFinite(wInput) || wInput <= 0 || wInput > 99999) {
+    errorEl.textContent = 'Enter a weight between 1 and 99,999.';
     errorEl.classList.remove('hidden');
     document.getElementById('results-1rm').classList.add('hidden');
     return;
@@ -301,14 +301,14 @@ document.getElementById('form-velocity').addEventListener('submit', e => {
 
   resultsEl.classList.remove('hidden');
 
-  if (!ormRaw || isNaN(orm) || orm <= 0) {
-    errorEl.textContent = 'Enter a 1RM greater than 0.';
+  if (!ormRaw || isNaN(orm) || !isFinite(orm) || orm <= 0 || orm > 99999) {
+    errorEl.textContent = 'Enter a 1RM between 1 and 99,999.';
     errorEl.classList.remove('hidden');
     validOutput.classList.add('hidden');
     return;
   }
-  if (workingRaw === '' || isNaN(working) || working < 0) {
-    errorEl.textContent = 'Enter a working weight of 0 or more.';
+  if (workingRaw === '' || isNaN(working) || !isFinite(working) || working < 0 || working > 99999) {
+    errorEl.textContent = 'Enter a working weight between 0 and 99,999.';
     errorEl.classList.remove('hidden');
     validOutput.classList.add('hidden');
     return;
@@ -403,14 +403,14 @@ document.getElementById('form-vbt').addEventListener('submit', e => {
 
   resultsEl.classList.remove('hidden');
 
-  if (!loadRaw || isNaN(loadInput) || loadInput <= 0) {
-    errorEl.textContent = 'Enter a load greater than 0.';
+  if (!loadRaw || isNaN(loadInput) || !isFinite(loadInput) || loadInput <= 0 || loadInput > 99999) {
+    errorEl.textContent = 'Enter a load between 1 and 99,999.';
     errorEl.classList.remove('hidden');
     validOutput.classList.add('hidden');
     lastResultsVbt = null;
     return;
   }
-  if (!velRaw || isNaN(mv) || mv <= 0) {
+  if (!velRaw || isNaN(mv) || !isFinite(mv) || mv <= 0) {
     errorEl.textContent = 'Enter a mean velocity in m/s (e.g., 0.60).';
     errorEl.classList.remove('hidden');
     validOutput.classList.add('hidden');
