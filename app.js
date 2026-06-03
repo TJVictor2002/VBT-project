@@ -450,6 +450,54 @@ document.getElementById('form-vbt').addEventListener('submit', e => {
 });
 
 // ============================================================
+// Waitlist form — AJAX submission via Formspree
+// Sign up at formspree.io, create a form, then replace the ID below.
+// ============================================================
+const FORMSPREE_URL = 'https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID';
+
+document.getElementById('form-waitlist').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const emailInput = document.getElementById('input-waitlist-email');
+  const btn        = e.target.querySelector('.btn-waitlist');
+  const successEl  = document.getElementById('waitlist-success');
+  const errorEl    = document.getElementById('waitlist-error');
+
+  const email = emailInput.value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errorEl.textContent = 'Enter a valid email address.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Sending…';
+  successEl.classList.add('hidden');
+  errorEl.classList.add('hidden');
+
+  try {
+    const res = await fetch(FORMSPREE_URL, {
+      method:  'POST',
+      headers: { 'Accept': 'application/json' },
+      body:    new FormData(e.target),
+    });
+
+    if (res.ok) {
+      emailInput.value = '';
+      successEl.classList.remove('hidden');
+    } else {
+      throw new Error('non-200');
+    }
+  } catch {
+    errorEl.textContent = 'Something went wrong. Please try again.';
+    errorEl.classList.remove('hidden');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Notify Me';
+  }
+});
+
+// ============================================================
 // Page load init
 // ============================================================
 renderHistory();
