@@ -453,7 +453,7 @@ document.getElementById('form-vbt').addEventListener('submit', e => {
 // Waitlist form — AJAX submission via Formspree
 // Sign up at formspree.io, create a form, then replace the ID below.
 // ============================================================
-const FORMSPREE_URL = 'https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID';
+const FORMSPREE_URL = 'https://formspree.io/f/xqeozbnq';
 
 document.getElementById('form-waitlist').addEventListener('submit', async e => {
   e.preventDefault();
